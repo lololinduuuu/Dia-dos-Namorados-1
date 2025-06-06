@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Great+Vibes&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #1a1a1a;
+      color: #f2f2f2;
+      overflow-x: hidden;
+    }
+
+    header {
+      background: linear-gradient(to right, #800040, #33001a);
+      padding: 2rem;
+      text-align: center;
+      color: white;
+    }
+
+    /* Nova fonte para o título principal */
+    h1 {
+      margin: 0;
+      font-size: 3rem; /* Um pouco maior para destaque */
+      font-family: 'Dancing Script', cursive; /* Nova fonte */
+      text-shadow: 0 0 15px rgba(255, 102, 153, 0.7); /* Sombra mais suave */
+      letter-spacing: 2px; /* Espaçamento entre letras */
+    }
+
+    #contadorDias {
+      margin-top: 0.5rem;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #ffffff;
+      text-shadow: 0 0 8px #ff3366;
+    }
+
+    .hearts {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .heart {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: #ff3366;
+      transform: rotate(45deg);
+      animation: float 6s infinite ease-in;
+    }
+
+    .heart::before,
+    .heart::after {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: #ff3366;
+      border-radius: 50%;
+    }
+
+    .heart::before {
+      top: -10px;
+      left: 0;
+    }
+
+    .heart::after {
+      left: -10px;
+      top: 0;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0) rotate(45deg); opacity: 1; }
+      100% { transform: translateY(-800px) rotate(45deg); opacity: 0; }
+    }
+
+    main {
+      padding: 2rem;
+      text-align: center;
+      z-index: 1;
+      position: relative;
+      /* Removido o padding-bottom fixo para evitar o espaço vazio excessivo */
+      /* O player de música agora é fixo e não interfere no fluxo de rolagem */
+    }
+
+    .texto p {
+      font-family: 'Great Vibes', cursive;
+      font-size: 24px;
+      line-height: 1.6;
+      color: #ffffff;
+      text-align: center;
+      padding: 20px;
+      margin: 0 auto;
+      max-width: 800px;
+    }
+
+    .galeria {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 2rem;
+      margin-bottom: 100px; /* Adicionado um pouco de margem para o footer e player */
+    }
+
+    .galeria img {
+      width: 250px;
+      height: 250px;
+      object-fit: cover;
+      border-radius: 20px;
+      box-shadow: 0 5px 15px rgba(255, 51, 102, 0.3);
+      transition: transform 0.3s ease;
+    }
+
+    .galeria img:hover {
+      transform: scale(1.05);
+    }
+    
+    footer {
+      background-color: #2b2b2b;
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.9rem;
+      color: #ccc;
+      position: relative;
+      /* Garantir que o footer não seja coberto pelo player */
+      margin-bottom: 80px; /* Altura aproximada do player */
+    }
+
+    /* PAINEL DE MÚSICA */
+    #painel-musica {
+      position: fixed; /* Fixa o player na parte inferior */
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #181818;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+
+    .painel-esquerda {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 200px;
+      flex-shrink: 0;
+    }
+
+    .painel-esquerda .info {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      max-width: 130px;
+    }
+    
+    .painel-esquerda .info .titulo,
+    .painel-esquerda .info .artista {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .painel-esquerda img {
+      width: 56px;
+      height: 56px;
+      border-radius: 5px;
+      object-fit: cover;
+    }
+
+    .painel-esquerda .info .titulo {
+      font-weight: bold;
+      font-size: 14px;
+    }
+    
+    .painel-centro {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      flex-grow: 1;
+      max-width: 450px;
+    }
+
+    .controles {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      color: white;
+    }
+
+    .controles i {
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: color 0.3s;
+    }
+
+    .controles i:hover {
+      color: #1db954;
+    }
+
+    .progresso {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      font-size: 0.75rem;
+    }
+
+    .barra-progresso {
+      flex-grow: 1;
+      height: 4px;
+      background: #535353;
+      border-radius: 2px;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .progresso-preenchido {
+      height: 100%;
+      background: #1db954;
+      border-radius: 2px;
+      width: 0%;
+    }
+
+    .painel-direita {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 150px;
+      flex-shrink: 0;
+    }
+
+    .painel-direita i {
+      font-size: 1rem;
+      color: white;
+    }
+
+    .painel-direita input[type="range"] {
+      -webkit-appearance: none;
+      width: 100px;
+      height: 4px;
+      background: #535353;
+      border-radius: 2px;
+      cursor: pointer;
+      accent-color: #1db954;
+    }
+
+    .painel-direita input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 10px;
+      height: 10px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 0 2px rgba(0,0,0,0.5);
+    }
+
+    .painel-direita input[type="range"]::-moz-range-thumb {
+      width: 10px;
+      height: 10px;
+      background: white;
+      border-radius: 50%;
+      border: none;
+    }
+
+    /* --- Media Queries para Responsividade --- */
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2.5rem; /* Ajuste para telas menores */
+      }
+
+      #contadorDias {
+        font-size: 1.2rem;
+      }
+
+      .texto p {
+        font-size: 20px;
+        padding: 15px;
+      }
+
+      .galeria img {
+        width: 200px;
+        height: 200px;
+      }
+
+      #painel-musica {
+        padding: 8px 10px;
+      }
+      
+      .painel-esquerda {
+        width: 180px;
+      }
+      
+      .painel-esquerda .info {
+        max-width: 110px;
+      }
+
+      .painel-esquerda img {
+        width: 48px;
+        height: 48px;
+      }
+
+      .controles {
+        gap: 15px;
+      }
+
+      .controles i {
+        font-size: 1rem;
+      }
+
+      .progresso {
+        font-size: 0.7rem;
+      }
+
+      .painel-direita {
+        width: 120px;
+      }
+
+      .painel-direita input[type="range"] {
+        width: 80px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      header {
+        padding: 1.5rem;
+      }
+
+      h1 {
+        font-size: 2rem; /* Mais ajuste para celulares */
+      }
+
+      #contadorDias {
+        font-size: 1rem;
+      }
+
+      .texto p {
+        font-size: 18px;
+        padding: 10px;
+      }
+
+      .galeria {
+        gap: 0.5rem;
+      }
+
+      .galeria img {
+        width: 150px;
+        height: 150px;
+        border-radius: 10px;
+      }
+
+      #painel-musica {
+        flex-direction: column;
+        align-items: center;
+        padding: 10px 0;
+        height: auto;
+      }
+
+      .painel-esquerda,
+      .painel-centro,
+      .painel-direita {
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 5px;
+      }
+
+      .painel-esquerda .info {
+        max-width: 200px;
+      }
+
+      .painel-esquerda {
+        width: 90%;
+        justify-content: flex-start;
+      }
+
+      .painel-centro {
+        order: 1;
+      }
+      .painel-esquerda {
+        order: 0;
+      }
+      .painel-direita {
+        order: 2;
+      }
+
+      .progresso {
+        width: 90%;
+        max-width: none;
+      }
+
+      .painel-direita {
+        margin-top: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<audio id="player" src="Música para o dia dos namorados/ANAVITÓRIA, Lenine - Lisboa (visualizer).mp3"></audio>
+
+<div id="painel-musica">
+  <div class="painel-esquerda">
+    <img id="capa" src="Música para o dia dos namorados/ab67616d0000b273b1e8a9fa2c21159ea637b766.jfif" alt="Capa da música">
+    <div class="info">
+      <div id="titulo" class="titulo">Lisboa</div>
+      <div id="artista" class="artista">ANAVITÓRIA, Lenine</div>
+    </div>
+  </div>
+
+  <div class="painel-centro">
+    <div class="controles">
+      <i class="fas fa-step-backward" onclick="voltar()"></i>
+      <i class="fas fa-play" id="playPauseBtn" onclick="togglePlayPause()"></i>
+      <i class="fas fa-step-forward" onclick="proxima()"></i>
+    </div>
+    <div class="progresso">
+      <span id="tempoAtual">0:00</span>
+      <div class="barra-progresso" onclick="pularPara(event)">
+        <div class="progresso-preenchido" id="progressoBar"></div>
+      </div>
+      <span id="duracaoTotal">0:00</span>
+    </div>
+  </div>
+
+  <div class="painel-direita">
+    <i class="fas fa-volume-low"></i>
+    <input type="range" id="volume" min="0" max="1" step="0.01" value="0.5" />
+  </div>
+</div>
+
+<div class="hearts"></div>
+
+<header>
+  <h1>Feliz Dia dos Namorados minha princesa 💕</h1>
+  <div id="contadorDias">0</div>
+</header>
+
+<main>
+  <div class="texto">
+    <p>Feliz dia dos namorados meu amor, obrigado por todos nosso momentos juntos, você é muito especial para mim! esse é nosso primeiro dia dos namorados juntos, o primeiro de muitos meu amor, cada momento que passo com você, cada segundo que penso em você, tenho a maior certeza de que fiz a maior e melhor escolha da minha vida. Quero que você saiba que independente de qualquer coisa, eu sempre vou estar com você, nos momentos bons e nos ruins. Eu Lorenzo Gabriel Feliciano da Silva juro com cada célula do meu corpo, amor eterno por você Brenda Mercedes Cubells Vidal. Eu te amo para sempre meu amor, daqui até o completo vazio do universo e do infinito.🌌❤️</p>
+  </div>
+  <div class="galeria">
+    <img src="Fotos para o site, dia dos namorados/Foto 1.jpeg" alt="">
+    <img src="Fotos para o site, dia dos namorados/Foto 2.jpeg" alt="">
+    <img src="Fotos para o site, dia dos namorados/Foto 3.jfif" alt="">
+  </div>
+
+</main>
+
+<script>
+  // Animação dos corações flutuantes
+  for (let i = 0; i < 20; i++) {
+    let heart = document.createElement('div');
+    heart.className = 'heart';
+    heart.style.left = Math.random() * 100 + 'vw';
+    heart.style.top = Math.random() * 100 + 'vh';
+    heart.style.animationDelay = Math.random() * 5 + 's';
+    document.querySelector('.hearts').appendChild(heart);
+  }
+
+  // Contador de tempo desde uma data inicial
+  function atualizarContador() {
+    const dataInicio = new Date(2025, 1, 8, 0, 0, 0); // 8 de fevereiro de 2025
+    const agora = new Date();
+    let diff = agora - dataInicio;
+
+    const segundosTotais = Math.floor(diff / 1000);
+    let segundos = segundosTotais % 60;
+    let minutos = Math.floor((segundosTotais / 60) % 60);
+    let horas = Math.floor((segundosTotais / 3600) % 24);
+    let diasTotais = Math.floor(segundosTotais / 86400);
+    let meses = Math.floor(diasTotais / 30.44); // Aproximação para meses
+    let dias = Math.floor(diasTotais - (meses * 30.44));
+    document.getElementById('contadorDias').textContent = `${meses} meses, ${dias} dias, ${horas}h ${minutos}min ${segundos}s`;
+  }
+
+  setInterval(atualizarContador, 1000);
+  atualizarContador();
+
+  // Configuração das músicas
+  const musicas = [
+    {
+      src: "Música para o dia dos namorados/ANAVITÓRIA, Lenine - Lisboa (visualizer).mp3",
+      capa: "Música para o dia dos namorados/ab67616d0000b273b1e8a9fa2c21159ea637b766.jfif",
+      titulo: "Lisboa",
+      artista: "ANAVITÓRIA, Lenine"
+    },
+    {
+      src: "Música para o dia dos namorados/Te vivo.mp3",
+      capa: "Música para o dia dos namorados/ab67616d0000b273ad5345fcf8661d387b3bc806.jfif",
+      titulo: "Te Vivo",
+      artista: "Luan Santana"
+    },
+    {
+      src: "Música para o dia dos namorados/Samaritano.mp3",
+      capa: "Música para o dia dos namorados/hq720.jpg",
+      titulo: "Samaritano",
+      artista: "Mc Hariel"
+    },
+    {
+      src: "Música para o dia dos namorados/Exagerado.mp3",
+      capa: "Música para o dia dos namorados/Exagerado.jpg",
+      titulo: "Exagerado",
+      artista: "Cazuza"
+ },
+    {
+      src: "Música para o dia dos namorados/entrelinhas.mp3",
+      capa: "Música para o dia dos namorados/entrelinhas.jfif",
+      titulo: "Entrelinhas",
+      artista: "Boaventura"
+ },
+    {
+      src: "Música para o dia dos namorados/Lutar Pelo Que E Meu.mp3",
+      capa: "Música para o dia dos namorados/Lutar.jfif",
+      titulo: "Lutar Pelo Que É Meu",
+      artista: "Charlie Brown Jr."
+ },
+      {
+      src: "Música para o dia dos namorados/A Droga do Amor.mp3",
+      capa: "Música para o dia dos namorados/A droga.jpg",
+      titulo: "A Droga do Amor",
+      artista: "Ari"
+ },
+
+
+      {
+      src: "Música para o dia dos namorados/A Nossa Praia.mp3",
+      capa: "Música para o dia dos namorados/A nossa praia.avif",
+      titulo: "A Nossa Praia",
+      artista: "Matheus & Kauan"
+ },
+
+  {
+      src: "Música para o dia dos namorados/pecado.mp3",
+      capa: "Música para o dia dos namorados/pecado1.png",
+      titulo: "Pecado",
+      artista: "MC Kelvinho, DJ Pereira, MC Don Juan, MC Hariel"       
+},
+
+  {
+      src: "Música para o dia dos namorados/Nós.mp3",
+      capa: "Música para o dia dos namorados/nós.jfif",
+      titulo: "Nós - Kayuá | Tiago Mac | Maria",
+      artista: "Kayuá, Tiago Mac, Maria"       
+},
+
+{
+      src: "Música para o dia dos namorados/Entregador.mp3",
+      capa: "Música para o dia dos namorados/entregador.avif",
+      titulo: "Entregador de Flor",
+      artista: "Diego & Victor Hugo"       
+},
+
+
+ 
+
+  ];
+
+  let musicaAtual = 0;
+
+  const audio = document.getElementById('player');
+  const volumeControl = document.getElementById('volume');
+  const playPauseBtn = document.getElementById('playPauseBtn');
+  const tempoAtual = document.getElementById('tempoAtual');
+  const duracaoTotal = document.getElementById('duracaoTotal');
+  const progressoBar = document.getElementById('progressoBar');
+  const capaImg = document.getElementById('capa');
+  const tituloDiv = document.getElementById('titulo');
+  const artistaDiv = document.getElementById('artista');
+  const barraProgressoContainer = document.querySelector('.barra-progresso');
+
+
+  audio.volume = 0.5;
+
+  function carregarMusica(index) {
+    const musica = musicas[index];
+    audio.src = musica.src;
+    capaImg.src = musica.capa;
+    tituloDiv.textContent = musica.titulo;
+    artistaDiv.textContent = musica.artista;
+    audio.load();
+    if (!audio.paused) {
+        playPauseBtn.classList.remove('fa-play');
+        playPauseBtn.classList.add('fa-pause');
+    }
+  }
+
+  function togglePlayPause() {
+    if (audio.paused) {
+      audio.play();
+      playPauseBtn.classList.remove('fa-play');
+      playPauseBtn.classList.add('fa-pause');
+    } else {
+      audio.pause();
+      playPauseBtn.classList.remove('fa-pause');
+      playPauseBtn.classList.add('fa-play');
+    }
+  }
+
+  function voltar() {
+    musicaAtual--;
+    if (musicaAtual < 0) {
+      musicaAtual = musicas.length - 1;
+    }
+    carregarMusica(musicaAtual);
+    audio.play();
+  }
+
+  function proxima() {
+    musicaAtual++;
+    if (musicaAtual >= musicas.length) musicaAtual = 0;
+    carregarMusica(musicaAtual);
+    audio.play();
+  }
+  
+  function pularPara(event) {
+    const barraWidth = barraProgressoContainer.clientWidth;
+    const clickX = event.offsetX;
+    const duracao = audio.duration;
+    audio.currentTime = (clickX / barraWidth) * duracao;
+  }
+
+  volumeControl.addEventListener('input', () => {
+    audio.volume = volumeControl.value;
+  });
+
+  audio.addEventListener('timeupdate', () => {
+    if (audio.duration) {
+        const pct = (audio.currentTime / audio.duration) * 100;
+        progressoBar.style.width = pct + "%";
+        tempoAtual.textContent = formatarTempo(audio.currentTime);
+        duracaoTotal.textContent = formatarTempo(audio.duration);
+    }
+  });
+
+  audio.addEventListener('ended', proxima);
+  
+  barraProgressoContainer.addEventListener('click', pularPara);
+
+  function formatarTempo(segundos) {
+    if (isNaN(segundos)) return "0:00";
+    const min = Math.floor(segundos / 60);
+    const seg = Math.floor(segundos % 60);
+    return `${min}:${seg < 10 ? '0' : ''}${seg}`;
+  }
+
+  carregarMusica(musicaAtual);
+
+</script>
+
+</body>
+</html>
